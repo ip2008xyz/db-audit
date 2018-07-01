@@ -6,14 +6,14 @@
 
     <groupId>com.tmy</groupId>
     <artifactId>audit_example</artifactId>
-    <version>0.0.2</version>
+    <version>0.0.3</version>
 
     <properties>
         <java.version>1.8</java.version>
         <lombok.version>1.18.0</lombok.version>
         <apache.poi.version>3.17</apache.poi.version>
         <mapstruct.version>1.2.0.Final</mapstruct.version>
-        <audit.version>0.0.2</audit.version>
+        <audit.version>${project.version}</audit.version>
     </properties>
 
     <parent>

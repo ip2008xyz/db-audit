@@ -5,7 +5,7 @@
     <parent>
         <artifactId>audit</artifactId>
         <groupId>com.tmy</groupId>
-        <version>0.0.2</version>
+        <version>0.0.3</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -19,12 +19,22 @@
         <dependency>
             <groupId>com.tmy</groupId>
             <artifactId>listener</artifactId>
-            <version>0.0.2</version>
+            <version>0.0.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.tmy</groupId>
+            <artifactId>annotation</artifactId>
+            <version>0.0.3</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
             <version>5.0.7.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.2.3</version>
         </dependency>
     </dependencies>
     <build>

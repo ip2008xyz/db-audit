@@ -6,13 +6,16 @@ import com.tmy.audit_example.mapper.PeopleMapper;
 import com.tmy.audit_example.model.PeopleModel;
 import com.tmy.audit_example.repository.PeopleRepository;
 import com.tmy.audit_example.services.PeopleService;
+import static java.util.Objects.nonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import static java.util.Objects.nonNull;
-
 @Service
 public class PeopleServiceImpl implements PeopleService {
+
+    private static final Logger logger = LoggerFactory.getLogger(PeopleServiceImpl.class);
 
     @Autowired
     private PeopleMapper peopleMapper;
@@ -30,7 +33,8 @@ public class PeopleServiceImpl implements PeopleService {
         if (nonNull(fromDb)) {
             people.setId(fromDb.getId());
         }
-        System.out.println(people);
+        logger.info("People: {}", people);
+        
         people = peopleRepository.save(people);
 
         return peopleMapper.from(people);

@@ -7,12 +7,15 @@ import com.tmy.audit.listener.services.BaseFactoryAudit;
 import org.hibernate.event.spi.PostCommitInsertEventListener;
 import org.hibernate.event.spi.PostInsertEvent;
 import org.hibernate.persister.entity.EntityPersister;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class InsertListener implements PostCommitInsertEventListener {
 
     private BaseFactoryAudit auditFactory;
-
+    private static final Logger logger = LoggerFactory.getLogger(UpdateListener.class);
+    
     public InsertListener(BaseFactoryAudit auditFactory) {
         this.auditFactory = auditFactory;
     }
@@ -23,7 +26,7 @@ public class InsertListener implements PostCommitInsertEventListener {
 
         BaseAudit auditEntity = auditFactory.factory(event);
         Operation operations = auditEntity.audit();
-        System.out.println(operations);
+        logger.info("Insert: {}", operations);
 
     }
 

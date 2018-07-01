@@ -1,8 +1,12 @@
 package com.tmy.audit.processor.writers;
 
+import com.tmy.audit.annotation.Audit;
 import com.tmy.audit.listener.audit.BaseAudit;
 import com.tmy.audit.listener.events.PostEvent;
 import com.tmy.audit.listener.operation.Operation;
+import com.tmy.audit.processor.services.FieldsService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
@@ -13,17 +17,21 @@ import java.util.List;
 
 public class BaseAuditWriter {
 
+    private static final Logger logger = LoggerFactory.getLogger(BaseAuditWriter.class);
+
+    FieldsService fieldsService = new FieldsService();
+
     public void write(List<Element> elements, ProcessingEnvironment processingEnv) throws IOException {
+
         if (elements.size() == 0) {
-            System.out.println("Could not found the @com.tmy.audit.annotation.Audit annotations on any class");
+            logger.warn("Could not found the {} annotations on any class", Audit.class);
             return;
         }
 
-        System.out.println("baseAuditWriter: " + elements);
+        logger.info("Elements: {}", elements);
+
         for (Element element : elements) {
-            System.out.println(element.getSimpleName());
-            System.out.println(element.getEnclosingElement());
-            System.out.println(element);
+            logger.info("Element: {}, Enclosing: {}, Kind: {}", element.getSimpleName(), element.getEnclosingElement(), element.getKind());
             writeForClass(element, processingEnv);
         }
     }
@@ -34,7 +42,10 @@ public class BaseAuditWriter {
 
         JavaFileObject builderFile = processingEnv.getFiler().createSourceFile(packageName + "." + simpleClassName);
 
+        fieldsService.getFields(element);
+
         try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
+
 
             out.printf("package %s;", packageName).println();
             out.println();

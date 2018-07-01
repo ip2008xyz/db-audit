@@ -1,7 +1,12 @@
 package com.tmy.audit.processor;
 
+import com.tmy.audit.annotation.Audit;
+import com.tmy.audit.processor.exceptions.WriterException;
 import com.tmy.audit.processor.writers.BaseAuditWriter;
 import com.tmy.audit.processor.writers.BaseFactoryAuditWriter;
+import static javax.lang.model.element.ElementKind.CLASS;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
@@ -10,19 +15,16 @@ import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import javax.tools.JavaFileObject;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import static javax.lang.model.element.ElementKind.CLASS;
-
-@SupportedAnnotationTypes({"com.tmy.audit.annotation.Audit", "com.tmy.audit.annotation.Ignore", "javax.annotation.PostConstruct"})
+@SupportedAnnotationTypes({"com.tmy.audit.annotation.Audit"})
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class AuditProcessor extends AbstractProcessor {
+
+    private static final Logger logger = LoggerFactory.getLogger(AuditProcessor.class);
 
     private List<Element> classes = new ArrayList<>();
 
@@ -34,22 +36,24 @@ public class AuditProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnvironment) {
 
-        System.out.println("annotations: " + annotations);
+        logger.debug("Annotations: {}", annotations);
 
         if (annotations.size() == 0) {
             return true;
         }
 
         for (TypeElement annotation : annotations) {
-            System.out.println("annotation: " + annotation);
-            Set<? extends Element> annotatedElements = roundEnvironment.getElementsAnnotatedWith(annotation);
-            System.out.println("annotatedElements: " + annotatedElements);
-            for (Element element : annotatedElements) {
-                System.out.println("element: " + element.toString());
-                System.out.println("getSimpleName: " + element.getSimpleName());
-                System.out.println("getKind: " + element.getKind());
+            logger.debug("Annotation: {}", annotation);
 
-                if (CLASS.equals(element.getKind()) && annotation.toString().equals("com.tmy.audit.annotation.Audit")) {
+
+            Set<? extends Element> annotatedElements = roundEnvironment.getElementsAnnotatedWith(annotation);
+
+            logger.debug("AnnotatedElements: {}", annotatedElements);
+
+            for (Element element : annotatedElements) {
+                logger.debug("Element: {}, SimpleName: {}, Kind: {}", element.toString(), element.getSimpleName(), element.getKind());
+
+                if (CLASS.equals(element.getKind()) && annotation.toString().equals(Audit.class.getCanonicalName())) {
                     classes.add(element);
                 }
 
@@ -60,81 +64,12 @@ public class AuditProcessor extends AbstractProcessor {
             baseFactoryAuditWriter.write(classes, processingEnv);
 
         } catch (IOException e) {
-            System.out.println("Could not generate files: " + e);
+            logger.warn("Could not generate files", e);
+            throw new WriterException(e.getMessage());
         }
 
         return true;
     }
 
-    private void writeBuilderFile(
-            String className, Map<String, String> setterMap)
-            throws IOException {
-
-        String packageName = null;
-        int lastDot = className.lastIndexOf('.');
-        if (lastDot > 0) {
-            packageName = className.substring(0, lastDot);
-        }
-
-        String simpleClassName = className.substring(lastDot + 1);
-        String builderClassName = className + "Builder";
-        String builderSimpleClassName = builderClassName
-                .substring(lastDot + 1);
-
-        JavaFileObject builderFile = processingEnv.getFiler()
-                .createSourceFile(builderClassName);
-
-        try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
-
-            if (packageName != null) {
-                out.print("package ");
-                out.print(packageName);
-                out.println(";");
-                out.println();
-            }
-
-            out.print("public class ");
-            out.print(builderSimpleClassName);
-            out.println(" {");
-            out.println();
-
-            out.print("    private ");
-            out.print(simpleClassName);
-            out.print(" object = new ");
-            out.print(simpleClassName);
-            out.println("();");
-            out.println();
-
-            out.print("    public ");
-            out.print(simpleClassName);
-            out.println(" build() {");
-            out.println("        return object;");
-            out.println("    }");
-            out.println();
-
-            setterMap.entrySet().forEach(setter -> {
-                String methodName = setter.getKey();
-                String argumentType = setter.getValue();
-
-                out.print("    public ");
-                out.print(builderSimpleClassName);
-                out.print(" ");
-                out.print(methodName);
-
-                out.print("(");
-
-                out.print(argumentType);
-                out.println(" value) {");
-                out.print("        object.");
-                out.print(methodName);
-                out.println("(value);");
-                out.println("        return this;");
-                out.println("    }");
-                out.println();
-            });
-
-            out.println("}");
-        }
-    }
 }
 

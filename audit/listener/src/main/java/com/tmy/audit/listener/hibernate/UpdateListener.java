@@ -7,9 +7,13 @@ import com.tmy.audit.listener.services.BaseFactoryAudit;
 import org.hibernate.event.spi.PostCommitUpdateEventListener;
 import org.hibernate.event.spi.PostUpdateEvent;
 import org.hibernate.persister.entity.EntityPersister;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class UpdateListener implements PostCommitUpdateEventListener {
+
+    private static final Logger logger = LoggerFactory.getLogger(UpdateListener.class);
 
     private BaseFactoryAudit auditFactory;
 
@@ -23,7 +27,8 @@ public class UpdateListener implements PostCommitUpdateEventListener {
 
         BaseAudit auditEntity = auditFactory.factory(event);
         Operation operations = auditEntity.audit();
-        System.out.println(operations);
+        logger.info("Update: {}", operations);
+
     }
 
 

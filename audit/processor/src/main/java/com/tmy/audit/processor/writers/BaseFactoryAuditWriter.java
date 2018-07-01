@@ -1,9 +1,12 @@
 package com.tmy.audit.processor.writers;
 
 
+import com.tmy.audit.annotation.Audit;
 import com.tmy.audit.listener.audit.BaseAudit;
 import com.tmy.audit.listener.events.PostEvent;
 import com.tmy.audit.listener.services.BaseFactoryAudit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -15,19 +18,21 @@ import java.util.List;
 
 public class BaseFactoryAuditWriter {
 
+    private static final Logger logger = LoggerFactory.getLogger(BaseFactoryAuditWriter.class);
+
     private static final String simpleClassName = BaseFactoryAudit.class.getSimpleName() + "Impl";
 
     public void write(List<Element> elements, ProcessingEnvironment processingEnv) throws IOException {
 
         if (elements.size() == 0) {
-            System.out.println("Could not found the @com.tmy.audit.annotation.Audit annotations on any class");
+            logger.warn("Could not found the {} annotations on any class", Audit.class);
             return;
         }
 
-        System.out.println("writeBaseFactoryAudit: " + elements);
+        logger.debug("Elements: {}", elements);
+
         for (Element element : elements) {
-            System.out.println(element.getSimpleName());
-            System.out.println(element);
+            logger.debug("Element: {}", element.getSimpleName());
         }
 
         String packageName = getThePackage(elements);
